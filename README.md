@@ -1,1 +1,28 @@
-# MaRS_SummerTasks
+# MaRS Summer Tasks
+
+## Task-1:
+
+### What I Learned
+* **Workspaces:** I learned how to create a ROS2 workspace (e.g., `~/ros2_ws/src`) to isolate project development.
+* **Building & Sourcing:** I used  `colcon build` to compile the packages. I also learned the importance of overlaying the workspace onto the base ROS2 installation by sourcing the `install/setup.zsh` file, which allows my terminal to recognize my custom executables.
+* **Package Creation:** I created a Python based package using `ament_python`. I also learned that a package acts like a container which can be used as seperate modules for certain tasks.
+* **Dependencies:** I learned `rosdep` to automatically check and install missing dependencies in the `package.xml`.
+* **Configuration:** I configured the `setup.py` file to tell the system where my nodes' code is located so they can be executed from the CLI.
+* **Publisher:** Wrote a `Publisher_Node` that continuously sends a string message over a specific topic (`/Channel1`).
+* **Subscriber:** Wrote a `Subscriber_Node` that listens to `/Channel1` and uses a callback function to log the data it receives to the terminal.
+
+---
+
+### CLI Outputs & Visualization(Python)
+
+I used the following ROS2 CLI tools:
+
+
+*(Screenshot of the terminal running node/topic lists and topic echo)*
+![Node List](images/PythonNode.png)
+
+*(RQT Graph)*
+
+![RQT Graph](images/Pythonrqtgraph.png)
+
+---
