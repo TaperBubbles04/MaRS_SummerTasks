@@ -27,7 +27,9 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'collision_avoidance_node = collision_avoidance.collision_avoidance_node:main'
+            'coll_avoid = collision_avoidance.collision_avoidance_node:main',
+            'circserver = collision_avoidance.circle_patrol_server:main',
+            'circclient = collision_avoidance.circle_patrol_client:main'
         ],
     },
 )

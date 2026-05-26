@@ -9,11 +9,11 @@ class CollisionAvoidanceNode(Node):
     def __init__(self):
         super().__init__('collision_avoidance_node')
 
-        self.declare_parameter('safety_threshold', 1.5)
+        self.declare_parameter('sfty_thd', 1.5)
 
-        self.publisher_ = self.create_publisher(Twist, '/turtle1/cmd_vel', 10)
+        self.pub = self.create_publisher(Twist, '/turtle1/cmd_vel', 10)
 
-        self.subscription = self.create_subscription(
+        self.sub = self.create_subscription(
             Pose,
             '/turtle1/pose',
             self.pose_callback,
@@ -21,20 +21,20 @@ class CollisionAvoidanceNode(Node):
         )
 
     def pose_callback(self, msg: Pose):
-        threshold = self.get_parameter('safety_threshold').value
+        thd = self.get_parameter('sfty_thd').value
         x = msg.x
         y = msg.y
         cmd = Twist()
 
-        if x < threshold or x > (11.0 - threshold) or y < threshold or y > (11.0 - threshold):
-            cmd.linear.x = 0.5
-            cmd.angular.z = 1.5 
-            self.get_logger().info(f'Wall detected! Spinning away. (Threshold: {threshold})')
+        if x < thd or x > (11.0 - thd) or y < thd or y > (11.0 - thd):
+            cmd.linear.x = 1.0
+            cmd.angular.z = 2.0 
+            self.get_logger().info(f'Detected Wall. Rerouting... (Threshold: {thd})')
         else:
-            cmd.linear.x = 1.5
+            cmd.linear.x = 2.0
             cmd.angular.z = 0.0
 
-        self.publisher_.publish(cmd)
+        self.pub.publish(cmd)
 
 def main(args=None):
     rclpy.init(args=args)

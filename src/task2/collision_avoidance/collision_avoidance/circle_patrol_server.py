@@ -1,0 +1,116 @@
+import rclpy
+from rclpy.node import Node
+from geometry_msgs.msg import Twist
+from turtlesim.msg import Pose
+
+from interfaces.action import ExecuteCircle
+from rclpy.action import ActionServer
+
+from rclpy.executors import MultiThreadedExecutor
+from rclpy.callback_groups import ReentrantCallbackGroup
+import math
+import time
+
+class CirclePatrolServer(Node):
+    def __init__(self):
+        super().__init__('circle_patrol_server')
+        
+        cb_group = ReentrantCallbackGroup()
+        
+        self.pub = self.create_publisher(Twist, '/turtle1/cmd_vel', 10)
+        self.sub = self.create_subscription(Pose, '/turtle1/pose', self.pose_callback, 10, callback_group=cb_group)
+        
+        self._action_server = ActionServer(
+            self,
+            ExecuteCircle,
+            'execute_circle',
+            self.execute_callback,
+            callback_group=cb_group
+        )
+        
+        self.cur_pos = None
+        self.get_logger().info('Waiting for radius coordinates...')
+
+    def pose_callback(self, msg: Pose):
+        self.curpos = msg
+
+    def execute_callback(self, goal_handle):
+        radius = goal_handle.request.radius
+        self.get_logger().info(f'Moving in circle with {radius}m radius.')
+        
+        while self.curpos is None:
+            time.sleep(0.1)
+            
+        sx = self.curpos.x
+        sy = self.curpos.y
+        lx = sx
+        ly = sy
+        
+        v = 1.5 
+        w = v / radius 
+        
+        cmd = Twist()
+        cmd.linear.x = v
+        cmd.angular.z = w
+        
+        distance_traveled = 0.0
+        circumference = 2 * math.pi * radius
+        
+        fmsg = ExecuteCircle.Feedback()
+        result = ExecuteCircle.Result()
+
+        while rclpy.ok():
+            if not goal_handle.is_active:
+                return ExecuteCircle.Result()
+
+            x = self.curpos.x
+            y = self.curpos.y
+            
+            thd = 1.0 
+            if x < thd or x > (11.0 - thd) or y < thd or y > (11.0 - thd):
+                cmd.linear.x = 0.0
+                cmd.angular.z = 0.0
+                self.pub.publish(cmd) 
+                
+                goal_handle.abort() 
+                result.success = False
+                result.final_report = "Mission Aborted: Boundary Collision Imminent!"
+                self.get_logger().error(result.final_report)
+                return result
+
+            step = math.sqrt((x - lx)**2 + (y - ly)**2)
+            distance_traveled += step
+            lx = x
+            ly = y
+            
+            fmsg.distance_traveled = distance_traveled
+            fmsg.current_status = "Moving..."
+            goal_handle.publish_feedback(fmsg)
+            
+            tdist = math.sqrt((x - sx)**2 + (y - sy)**2)
+            
+            if distance_traveled > (circumference * 0.5) and tdist < 0.2:
+                cmd.linear.x = 0.0
+                cmd.angular.z = 0.0
+                self.pub.publish(cmd)
+                
+                goal_handle.succeed()
+                result.success = True
+                result.final_report = "Full loop completed"
+                self.get_logger().info(result.final_report)
+                return result
+
+            self.pub.publish(cmd)
+            time.sleep(0.05)
+
+
+def main(args=None):
+    rclpy.init(args=args)
+    node = CirclePatrolServer()
+    executor = MultiThreadedExecutor()
+    rclpy.spin(node, executor=executor)
+    node.destroy_node()
+    rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()

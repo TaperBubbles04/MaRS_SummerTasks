@@ -14,7 +14,7 @@ def generate_launch_description():
             executable='collision_avoidance_node',
             name='collision_avoidance_node',
             parameters=[
-                {'safety_threshold': 2.0} 
+                {'sfty_thd': 2.0} 
             ]
         )
     ])
