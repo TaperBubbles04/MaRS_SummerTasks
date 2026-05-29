@@ -11,7 +11,7 @@ def generate_launch_description():
         
         Node(
             package='collision_avoidance',
-            executable='collision_avoidance_node',
+            executable='coll_avoid',
             name='collision_avoidance_node',
             parameters=[
                 {'sfty_thd': 2.0} 

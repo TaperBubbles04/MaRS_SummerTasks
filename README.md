@@ -38,3 +38,31 @@ I used the following ROS2 CLI tools:
 ![RQT Graph](images/CPPRQTgraph.png)
 
 ---
+
+## Task-2:
+
+## Part 2: Deep Dive into the Communication Layer
+
+### A. ROS 1 vs ROS 2 Architectural Shift
+
+**1.**
+In ROS 1, the network depended on a centralized registry called the ROS Master. Every node that booted up had to first register with the Master to share its location and discover other nodes. This made initial handshaking simple, but it created a **Single Point of Failure (SPOF)**. If the machine running `roscore` crashed, or lost WiFi connection, the entire robotic system paralyzed. Existing nodes could sometimes continue talking, but no new nodes could join, and if a connection stopped it couldnt be reestablished.
+
+**2. Decentralization in ROS 2**
+ROS 2 eliminates the centralized Master in favor of a peer-to-peer decentralized architecture. It adopts an industry-standard middleware known as Data Distribution Service (DDS). In ROS 2, nodes are entirely self-sufficient. They rely on distributed discovery mechanisms to find each other directly across a network, meaning there is no central broker that can crash and take down the robot.
+
+**3. Data Transport: TCPROS/UDPROS vs. DDS Wire Protocol**
+* **ROS 1 (TCPROS / UDPROS):** ROS 1 utilized custom, ROS-specific transport protocols. TCPROS was the default for reliable, stream-based data, while UDPROS was used for faster, best-effort data (like video feeds). Because these were custom-built for ROS, they lacked advanced networking capabilities and struggled with complex, lossy WiFi environments.
+* **ROS 2 (DDS Wire Protocol / RTPS):** ROS 2 replaces these custom protocols with the Real-Time Publish Subscribe (RTPS) wire protocol, the underlying standard of DDS. RTPS sits on top of standard UDP and provides its own highly tunable Quality of Service (QoS) profiles, ensuring secure, real-time, and reliable data delivery without needing TCP.
+
+### B. DDS (Data Distribution Service)
+
+**1. The Discoverability Mechanism (SDP & Multicast UDP)**
+To allow two ROS 2 nodes on separate laptops to find each other over the same Wi-Fi network without a central server, DDS utilizes the **Simple Discovery Protocol (SDP)**. 
+When a new ROS 2 node boots up, it automatically sends out a "shout" to the local network using **Multicast UDP**. Instead of sending a message to a specific IP address, multicast sends the message to a designated shared channel that all ROS 2 nodes actively listen to. When existing nodes hear this multicast shout, they identify the new node, exchange connection details, and establish a direct peer-to-peer connection to begin sharing topic data.
+
+**2. DDS Vendors and Configuration**
+Three major DDS vendors integrated into ROS 2 include:
+* **eProsima Fast DDS** *export RMW_IMPLEMENTATION=rmw_fastrtps_cpp*
+* **Eclipse Cyclone DDS** *export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp*
+* **RTI Connext DDS** *export RMW_IMPLEMENTATION=rmw_connextdds*
