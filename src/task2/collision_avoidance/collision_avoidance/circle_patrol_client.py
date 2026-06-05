@@ -56,7 +56,7 @@ def main(args=None):
     if len(sys.argv)>1:
         r=float(sys.argv[1])
     else:
-        r=2
+        r=2.0
 
     node.send_goal(r)
     rclpy.spin(node)
