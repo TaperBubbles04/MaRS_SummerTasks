@@ -39,7 +39,94 @@ I used the following ROS2 CLI tools:
 
 ---
 
+### How to Run the Nodes:
+**1. Build the Workspace**
+
+Before running any nodes, make sure the workspace is built and sourced:
+```bash
+cd ~/ros2_ws
+colcon build --packages-select cpp_pubsub py_pubandsub
+source install/setup.bash
+```
+
+***Running the Python Nodes:***
+
+Open two separate terminal windows (ensure you run source install/setup.bash in both).
+
+Terminal 1 (Publisher):
+```bash
+ros2 run py_pubandsub publisher
+```
+Terminal 2 (Subscriber):
+```bash
+ros2 run py_pubandsub subscriber
+```
+
+***Running the C++ Nodes:***
+
+Similarly, open two separate sourced terminal windows.
+
+Terminal 1 (Publisher):
+
+```bash
+ros2 run cpp_pubsub publisher
+```
+Terminal 2 (Subscriber):
+
+```bash
+ros2 run cpp_pubsub subscriber
+```
+---
+
 ## Task-2:
+## Part 1: 
+
+**1. Build and Source the Workspace**
+
+Ensure the workspace is built and sourced:
+```bash
+cd ~/ros2_ws
+colcon build --packages-select collision_avoidance
+source install/setup.bash
+```
+
+**Subtask A: Auto-Avoidance & Launch Files**
+
+To test the automatic wall avoidance, we use a launch file to start both the turtlesim environment and our custom control node simultaneously.
+
+```bash
+ros2 launch collision_avoidance launch.py
+```
+
+This single command triggers the launch script, which opens the blue Turtlesim window and starts the collision_avoidance_node. It also passes a default safety threshold parameter of 2.0 meters to the node.
+
+***Modifying Parameters:***
+You can dynamically change how close the turtle is allowed to get to the wall without stopping the program. Open a new terminal, source it, and run:
+
+```bash
+ros2 param set /collision_avoidance_node sfty_thd <new_parameter_value>
+```
+
+**Subtask B: Circular Patrol (Action Server & Client)**
+
+Open two separate terminal windows (source both).
+
+Terminal 1 (Start the Server):
+
+```bash
+ros2 run collision_avoidance circle_patrol_server
+```
+
+This starts the Action Server in the background. It will wait patiently for a goal request to arrive.
+
+Terminal 2 (Send the Goal via Client):
+
+```bash
+ros2 run collision_avoidance circle_patrol_client <radius_value>
+```
+
+This command runs the Action Client and passes the radius as a command-line argument. The client sends a goal to the server requesting a circle with the specified radius. You will see real-time distance feedback print in this terminal until the circle is complete (or aborted due to a wall collision).
+
 
 ## Part 2: Deep Dive into the Communication Layer
 
