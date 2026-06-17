@@ -153,3 +153,58 @@ Three major DDS vendors integrated into ROS 2 include:
 * **eProsima Fast DDS** *export RMW_IMPLEMENTATION=rmw_fastrtps_cpp*
 * **Eclipse Cyclone DDS** *export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp*
 * **RTI Connext DDS** *export RMW_IMPLEMENTATION=rmw_connextdds*
+
+## Task-3:
+
+*(Rviz2 Simulation)*
+
+![Rviz2 Simulation](images/rviz_sim.png)
+
+*(TF Tree)*
+
+![TF Tree](images/tf_tree.png)
+
+---
+
+## Task 4:
+
+*(Sensor Vizualisation)*
+
+![Sensor Vizualisation](images/sensor_vizualisation.png)
+
+*(Full TF Tree)*
+
+![Full TF Tree](images/fulltf_tree.png)
+
+
+### 🚀 How to Run the Simulation
+
+**1. Launch the Physics Engine and Robot:**
+Open a sourced terminal and run the main launch file. This starts Gazebo, spawns the URDF, and activates all sensor bridges and hardware controllers.
+
+```bash
+ros2 launch robotsim gazebo.launch.py
+```
+
+**2. Visualize the Sensor Data:**
+Open a second terminal and launch RViz2 to see the robot's real-time TF Tree, Lidar scans, IMU vectors, and live Camera feed.
+
+```bash
+ros2 run rviz2 rviz2
+```
+
+**3. Actuate the Hardware (Drive & Aim):**
+To manually drive the robot using the diff_drive_controller, open a third terminal:
+
+```bash
+ros2 run teleop_twist_keyboard teleop_twist_keyboard
+```
+
+**4. Turning the Rotating Camera Arm:**
+To aim the arm using the joint_trajectory_controller, open a fourth terminal and use the GUI slider:
+
+```bash
+ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -r cmd_vel:=/diff_drive_controller/cmd_vel_unstamped
+```
+
+(Insert Task 4 Screenshot Here - Showing active Lidar, Camera stream, IMU, and rqt slider)

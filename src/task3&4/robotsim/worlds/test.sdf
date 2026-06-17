@@ -46,5 +46,34 @@
                 </visual>
             </link>
         </model>
+
+        <model name="pillar_obstacle">
+            <static>true</static> <pose>2.0 1.0 0.5 0 0 0</pose> <link name="link">
+                <collision name="collision">
+                    <geometry><cylinder><radius>0.2</radius><length>1.0</length></cylinder></geometry>
+                </collision>
+                <visual name="visual">
+                    <geometry><cylinder><radius>0.2</radius><length>1.0</length></cylinder></geometry>
+                    <material>
+                        <ambient>0.3 0.3 0.3 1</ambient> <diffuse>0.3 0.3 0.3 1</diffuse>
+                    </material>
+                </visual>
+            </link>
+        </model>
+
+        <model name="rock_obstacle">
+            <static>true</static>
+            <pose>1.5 -1.5 0.3 0 0 0</pose> <link name="link">
+                <collision name="collision">
+                    <geometry><sphere><radius>0.3</radius></sphere></geometry>
+                </collision>
+                <visual name="visual">
+                    <geometry><sphere><radius>0.3</radius></sphere></geometry>
+                    <material>
+                        <ambient>0.4 0.2 0.0 1</ambient> <diffuse>0.4 0.2 0.0 1</diffuse>
+                    </material>
+                </visual>
+            </link>
+        </model>
     </world>
 </sdf>

@@ -17,7 +17,7 @@ def generate_launch_description():
         package='robot_state_publisher',
         executable='robot_state_publisher',
         output='screen',
-        parameters=[robot_description]
+        parameters=[robot_description, {'use_sim_time': True}]
     )
 
     gazebo = IncludeLaunchDescription(
@@ -36,8 +36,42 @@ def generate_launch_description():
         output='screen'
     )
 
+    bridge = Node(
+        package='ros_ign_bridge',
+        executable='parameter_bridge',
+        arguments=[
+            '/scan@sensor_msgs/msg/LaserScan@ignition.msgs.LaserScan',
+            '/imu@sensor_msgs/msg/Imu@ignition.msgs.IMU',
+            '/camera@sensor_msgs/msg/Image@ignition.msgs.Image',
+            '/clock@rosgraph_msgs/msg/Clock[ignition.msgs.Clock'
+        ],
+        output='screen'
+    )
+    
+    load_joint_state_broadcaster = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["joint_state_broadcaster"],
+    )
+
+    load_arm_controller = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["arm_controller"],
+    )
+
+    load_drive_controller = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["diff_drive_controller"],
+    )
+
     return LaunchDescription([
         node_robot_state_publisher,
         gazebo,
-        spawn_entity
+        spawn_entity,
+        bridge,
+        load_joint_state_broadcaster,
+        load_arm_controller,
+        load_drive_controller
     ])
