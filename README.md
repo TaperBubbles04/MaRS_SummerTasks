@@ -179,32 +179,65 @@ Three major DDS vendors integrated into ROS 2 include:
 
 ### 🚀 How to Run the Simulation
 
-**1. Launch the Physics Engine and Robot:**
-Open a sourced terminal and run the main launch file. This starts Gazebo, spawns the URDF, and activates all sensor bridges and hardware controllers.
+**1. Launch the Physics Engine and Robot and Visualize the Sensor Data:**
+Open a sourced terminal and run the main launch file. This starts Gazebo, spawns the URDF, and activates all sensor bridges and hardware controllers and launches RViz2 to see the robot's real-time TF Tree, Lidar scans, IMU vectors, and live Camera feed.
 
 ```bash
-ros2 launch robotsim gazebo.launch.py
-```
-
-**2. Visualize the Sensor Data:**
-Open a second terminal and launch RViz2 to see the robot's real-time TF Tree, Lidar scans, IMU vectors, and live Camera feed.
-
-```bash
-ros2 run rviz2 rviz2
+ros2 launch robotsim robo.launch.py
 ```
 
 **3. Actuate the Hardware (Drive & Aim):**
 To manually drive the robot using the diff_drive_controller, open a third terminal:
 
 ```bash
-ros2 run teleop_twist_keyboard teleop_twist_keyboard
-```
-
-**4. Turning the Rotating Camera Arm:**
-To aim the arm using the joint_trajectory_controller, open a fourth terminal and use the GUI slider:
-
-```bash
 ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -r cmd_vel:=/diff_drive_controller/cmd_vel_unstamped
 ```
 
-(Insert Task 4 Screenshot Here - Showing active Lidar, Camera stream, IMU, and rqt slider)
+---
+
+
+## 🚀 Task 5: Aruco Marker and YOLOv8 Cone Detection System
+
+This package utilizes a custom-trained YOLOv8 Nano model to process live `/camera` feeds via OpenCV and detect colored cones in the Gazebo simulation.
+
+### Execution Instructions
+
+Open three separate terminal instances to run the system:
+
+**1. Launch the Simulation Environment:**
+
+```bash
+cd ~/ros2_ws
+source /opt/ros/humble/setup.zsh
+ros2 launch robotsim robo.launch.py 
+```
+
+**2. Launch Teleop (Driver):**
+
+```bash
+cd ~/ros2_ws
+source /opt/ros/humble/setup.zsh
+ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -r cmd_vel:=/diff_drive_controller/cmd_vel_unstamped
+```
+
+*(Aruco Marker Detection)*
+
+**3. Launch Aruco Detector Node:**
+```bash
+cd ~/ros2_ws/src/task3-5/robotsim/
+source /opt/ros/humble/setup.zsh
+python3 aruco_detector.py
+```
+
+*(Coloured Cone Detection)*
+
+**3. Launch YOLO Vision Node**
+Ensure best.pt is located in the same directory as the script before executing.
+
+```bash
+cd ~/ros2_ws/src/task3-5/robotsim/
+source /opt/ros/humble/setup.zsh
+python3 cone_detector.py
+```
+
+---
