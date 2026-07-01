@@ -48,7 +48,7 @@
         </model>
 
         <model name="aruco_target1">
-        <pose>-50.0 1.0 0.25 0 0 0</pose> 
+        <pose>-5.0 1.5 0.25 0 0.1 -1.5708</pose> 
         <static>true</static>
         <link name="link">
             <visual name="visual">
@@ -70,7 +70,7 @@
         </model>
 
         <model name="aruco_target2">
-        <pose>-50.0 -1.0 0.25 0 0 0</pose> 
+        <pose>-5.0 -1.5 0.25 0 0.1 1.5708</pose> 
         <static>true</static>
         <link name="link">
             <visual name="visual">

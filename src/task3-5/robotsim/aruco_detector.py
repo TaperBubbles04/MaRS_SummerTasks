@@ -49,7 +49,12 @@ class ArucoDetector(Node):
             aruco.drawDetectedMarkers(cv_image, corners, ids)
             
             marker_size = 0.2 
-            rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(corners, marker_size, self.camera_matrix, self.dist_coeffs)
+            marker_points = np.array([
+                [-marker_size / 2, marker_size / 2, 0],
+                [marker_size / 2, marker_size / 2, 0],
+                [marker_size / 2, -marker_size / 2, 0],
+                [-marker_size / 2, -marker_size / 2, 0]
+            ], dtype=np.float32)
             
             for i in range(len(ids)):
                 marker_id = ids[i][0]
@@ -58,50 +63,57 @@ class ArucoDetector(Node):
                             (int(corners[i][0][0][0]), int(corners[i][0][0][1]) - 10), 
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 
-                if marker_id in self.published_markers:
-                    continue 
-                
-                self.marker_observations[marker_id] = self.marker_observations.get(marker_id, 0) + 1
-                
-                if self.marker_observations[marker_id] >= 5:
-                    try:
-                        trans = self.tf_buffer.lookup_transform('odom', 'camera_link', rclpy.time.Time())
-                        
-                        p_cam = PoseStamped()
-                        p_cam.header.frame_id = 'camera_link'
-                        p_cam.pose.position.x = float(tvecs[i][0][0])
-                        p_cam.pose.position.y = float(tvecs[i][0][1])
-                        p_cam.pose.position.z = float(tvecs[i][0][2])
-                        p_cam.pose.orientation.w = 1.0 
-                        
-                        # Calculate Global Location
-                        p_global_pose = tf2_geometry_msgs.do_transform_pose(p_cam.pose, trans)
-                        
-                        # --- EXPLICIT GLOBAL POSITION TERMINAL READOUT ---
-                        gx = p_global_pose.position.x
-                        gy = p_global_pose.position.y
-                        gz = p_global_pose.position.z
-                        
-                        self.get_logger().info(f"")
-                        self.get_logger().info(f"Marker ID: {marker_id}")
-                        self.get_logger().info(f"Coordinates -> X: {gx:.3f}m | Y: {gy:.3f}m | Z: {gz:.3f}m")
-                        # -------------------------------------------------
+                success, rvec, tvec = cv2.solvePnP(
+                    marker_points, corners[i][0], self.camera_matrix, self.dist_coeffs
+                )
 
-                        t = TransformStamped()
-                        t.header.stamp = self.get_clock().now().to_msg()
-                        t.header.frame_id = 'odom'
-                        t.child_frame_id = f'global_aruco_{marker_id}'
-                        
-                        t.transform.translation.x = gx
-                        t.transform.translation.y = gy
-                        t.transform.translation.z = gz
-                        t.transform.rotation = p_global_pose.orientation
-                        
-                        self.tf_static_broadcaster.sendTransform(t)
-                        self.published_markers.add(marker_id)
-                        
-                    except Exception as e:
-                        self.get_logger().warn(f"TF Error for ID {marker_id}: {e}")
+                if success:
+                    cv2.drawFrameAxes(cv_image, self.camera_matrix, self.dist_coeffs, rvec, tvec, 0.1)
+
+                    if marker_id in self.published_markers:
+                        continue 
+                    
+                    self.marker_observations[marker_id] = self.marker_observations.get(marker_id, 0) + 1
+                    
+                    if self.marker_observations[marker_id] >= 5:
+                        try:
+                            trans = self.tf_buffer.lookup_transform('odom', 'camera_link', rclpy.time.Time())
+                            
+                            p_cam = PoseStamped()
+                            p_cam.header.frame_id = 'camera_link'
+                            
+                            p_cam.pose.position.x = float(tvec[0][0])
+                            p_cam.pose.position.y = float(tvec[1][0])
+                            p_cam.pose.position.z = float(tvec[2][0])
+                            p_cam.pose.orientation.w = 1.0 
+                            
+                            # Calculate Global Location
+                            p_global_pose = tf2_geometry_msgs.do_transform_pose(p_cam.pose, trans)
+                            
+                            # --- EXPLICIT GLOBAL POSITION TERMINAL READOUT ---
+                            gx = p_global_pose.position.x
+                            gy = p_global_pose.position.y
+                            gz = p_global_pose.position.z
+                            
+                            self.get_logger().info(f"Marker ID: {marker_id} locked.")
+                            self.get_logger().info(f"Global Coordinates -> X: {gx:.3f}m | Y: {gy:.3f}m | Z: {gz:.3f}m")
+                            # -------------------------------------------------
+
+                            t = TransformStamped()
+                            t.header.stamp = self.get_clock().now().to_msg()
+                            t.header.frame_id = 'odom'
+                            t.child_frame_id = f'global_aruco_{marker_id}'
+                            
+                            t.transform.translation.x = gx
+                            t.transform.translation.y = gy
+                            t.transform.translation.z = gz
+                            t.transform.rotation = p_global_pose.orientation
+                            
+                            self.tf_static_broadcaster.sendTransform(t)
+                            self.published_markers.add(marker_id)
+                            
+                        except Exception as e:
+                            self.get_logger().warn(f"TF Error for ID {marker_id}: {e}")
 
         cv2.imshow("Rover Camera View", cv_image)
         cv2.waitKey(1)
