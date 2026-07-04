@@ -229,6 +229,10 @@ source /opt/ros/humble/setup.zsh
 python3 aruco_detector.py
 ```
 
+*(Multiple Aruco Marker Detection)*
+
+![Multiple Aruco Marker Detection](images/aruco.png)
+
 *(Coloured Cone Detection)*
 
 **3. Launch YOLO Vision Node**
@@ -239,5 +243,9 @@ cd ~/ros2_ws/src/task3-5/robotsim/
 source /opt/ros/humble/setup.zsh
 python3 cone_detector.py
 ```
+
+*(Cone Detection)*
+
+![Cone Detection](images/cone.png)
 
 ---
